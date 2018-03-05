@@ -6,7 +6,9 @@ import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 
 /**
- * Created by Alex on 3/1/18.
+ * HangmanActivity Class
+ *
+ * Launches the Hangman Fragment
  */
 
 public class HangmanActivity extends SingleFragmentActivity {
@@ -15,12 +17,20 @@ public class HangmanActivity extends SingleFragmentActivity {
     private static final String EXTRA_WINS = "com.hangmanactivity.wins";
     private static final String EXTRA_LOSSES = "com.hangmanactivity.losses";
 
+    /**
+     * Gets the ID for the Hangman Layout
+     * @return the hangman layout
+     */
     @LayoutRes
     protected int getLayoutResId() {
         return R.layout.activity_hangman;
     }
 
 
+    /**
+     * creates the hangman fragment and places it in the layout.
+     * @return new hangman fragment
+     */
     @Override
     protected Fragment createFragment() {
         boolean isHuman = (boolean) getIntent().getBooleanExtra(EXTRA_ISHUMAN, false);
@@ -30,6 +40,15 @@ public class HangmanActivity extends SingleFragmentActivity {
         return HangmanFragment.newInstance(isHuman, difficulty, wins, losses);
     }
 
+    /**
+     * Starts new intent to launch the HangmanActivity. Called from the Welcome Fragment.
+     * @param packageContext The context of the activity
+     * @param isHuman opponent setting
+     * @param difficulty difficulty setting
+     * @param wins number of wins
+     * @param losses number of losses
+     * @return returns teh intent with the extras
+     */
     public static Intent newIntent(Context packageContext, boolean isHuman, Difficulty difficulty, int wins, int losses) {
         Intent intent = new Intent(packageContext, HangmanActivity.class);
         intent.putExtra(EXTRA_ISHUMAN, isHuman);

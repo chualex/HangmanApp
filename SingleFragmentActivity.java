@@ -7,7 +7,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
 /**
- * Created by Alex on 2/7/18.
+ * Class for a single fragment
+ *
+ * Loads the fragment in the layout
  */
 
 public abstract class SingleFragmentActivity extends AppCompatActivity {

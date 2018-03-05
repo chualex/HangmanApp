@@ -6,7 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 
+/**
+ * Welcome Activity Class
+ *
+ * creates the layout for the welcome fragment
+ */
 public class WelcomeActivity extends SingleFragmentActivity {
+
 
     @Override
     protected Fragment createFragment() {

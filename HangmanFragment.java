@@ -9,11 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import javax.xml.datatype.Duration;
 
 /**
  * Created by Alex on 3/1/18.
@@ -63,9 +59,15 @@ public class HangmanFragment extends Fragment {
     private static final String ARGUMENT_DISPLAYWORD = "com.hangmanactivity.displayword";
     private static final String ARGUMENT_LETTERSCLICKED = "com.hangmanactivity.lettersclicked";
 
+    /**
+     * Gets called on creation of the class. Takes in the passed arguments
+     *
+     * @param savedInstanceState Bundle for the last saved state.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // gets the arguments from the intent passed
         mIsHuman = getArguments().getBoolean(ARGUMENT_ISHUMAN);
         mDifficulty = (Difficulty) getArguments().getSerializable(ARGUMENT_DIFFICULTY);
         mWins = getArguments().getInt(ARGUMENT_WINS);
@@ -78,6 +80,8 @@ public class HangmanFragment extends Fragment {
         mLetterClicked = new boolean[26];
         Arrays.fill(mLetterClicked, false);
         loadWords();
+
+        // if loading from saved state gets arguments from the last saved state
         if (savedInstanceState != null) {
             mIsHuman = savedInstanceState.getBoolean(ARGUMENT_ISHUMAN);
             mDifficulty = (Difficulty) savedInstanceState.getSerializable(ARGUMENT_DIFFICULTY);
@@ -91,6 +95,14 @@ public class HangmanFragment extends Fragment {
 
     }
 
+    /**
+     * Creates the layout and all button and button listeners
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_hangman, container, false);
@@ -118,6 +130,7 @@ public class HangmanFragment extends Fragment {
         mWordTextView = (TextView) view.findViewById(R.id.word_text);
 
         // sets up start game button
+        // clicked after the user inputs a word for the second user to guess
         mStartGameButton = (Button) view.findViewById(R.id.start_game_button);
         mStartGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,16 +143,24 @@ public class HangmanFragment extends Fragment {
         });
 
         // set up letter buttons
+        // if the letters are pressed calls letterPressed()
         char letter = 'a';
+
+        // for loop to set all the letters
         for (int i = 0; i < mLetterButtons.length; i++) {
             final int I = i;
             final String buttonId = letter + "_button";
+
+            // gets teh id of the button
             int id = getResources().getIdentifier(buttonId, "id", getActivity().getPackageName());
+            // sets up the button in the button array
             mLetterButtons[I] = (Button) view.findViewById(id);
             if (mLetterClicked[i] == true) {
                 mLetterButtons[I].setVisibility(View.INVISIBLE);
             }
             final char finalLetter = letter;
+
+            // button listener for each letter button
             mLetterButtons[I].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -158,6 +179,7 @@ public class HangmanFragment extends Fragment {
         mPostGameLayout.setVisibility(View.INVISIBLE);
 
         // set up play again button
+        // pressed after win or loss to reset the game
         mPlayAgainButton = (Button) view.findViewById(R.id.play_again_button);
         mPlayAgainButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -177,6 +199,7 @@ public class HangmanFragment extends Fragment {
         }
 
         // set up quit button
+        // sends the user back to the Welcome Fragment
         mQuitButton = (Button) view.findViewById(R.id.quit_game_button);
         mQuitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,13 +210,19 @@ public class HangmanFragment extends Fragment {
         });
 
         //set up lost word display
+        // displays the word when the user has lost
         mLostWordDisplay = (TextView) view.findViewById(R.id.display_word);
 
+        // updates the layout
         updateUI();
 
         return view;
     }
 
+    /**
+     * sets the arguments of the last state when the activity is paused.
+     * @param outState Bundle for the saved state
+     */
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -207,6 +236,14 @@ public class HangmanFragment extends Fragment {
         outState.putBooleanArray(ARGUMENT_LETTERSCLICKED, mLetterClicked);
     }
 
+    /**
+     * Creates ne instance of this fragment with appropriate arguments
+     * @param isHuman opponent setting
+     * @param difficulty difficulty setting
+     * @param wins number of wins
+     * @param losses number of losses
+     * @return the new fragment with the arguments
+     */
     public static HangmanFragment newInstance(boolean isHuman, Difficulty difficulty, int wins, int losses) {
         Bundle args = new Bundle();
         args.putBoolean(ARGUMENT_ISHUMAN, isHuman);
@@ -219,6 +256,9 @@ public class HangmanFragment extends Fragment {
         return frag;
     }
 
+    /**
+     * sets the return results when being sent back to the Welcome Fragment
+     */
     public void setReturnResult() {
         Intent resultIntent = new Intent();
         resultIntent.putExtra(ARGUMENT_WINS, mWins);
@@ -226,6 +266,9 @@ public class HangmanFragment extends Fragment {
         getActivity().setResult(Activity.RESULT_OK, resultIntent);
     }
 
+    /**
+     * Initializes the game based on whether the opponent is human or computer player
+     */
     public void Initialize() {
         // Prompts user for word
         if (mIsHuman) {
@@ -237,14 +280,26 @@ public class HangmanFragment extends Fragment {
             pickWord();
         }
     }
+
+    /**
+     * updates the score text field with the wins and losses
+     */
     public void updateScoreText() {
         mScoreText.setText("Wins: " + mWins + "     Losses: " + mLosses);
     }
+
+    /**
+     * Sets up the prompt human layout. Asks for the word
+     */
     public void promptHuman() {
         hideGame(true);
         mHumanPromptLayout.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Hides or shows the game board the game board. Called before and after the game.
+     * @param hideGame boolean for whether to show or not show the game board
+     */
     public void hideGame(boolean hideGame) {
         if (hideGame) {
             mGameLayout.setVisibility(View.INVISIBLE);
@@ -254,11 +309,16 @@ public class HangmanFragment extends Fragment {
         }
     }
 
+    /**
+     * loads the words from the text file
+     */
     public void loadWords() {
         String line;
         try {
+            // gets all the words in the text file
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getActivity().getAssets().open("words.txt")));
 
+            // while the text file can read it reads the word into the respective array of words
             while((line = bufferedReader.readLine()) != null) {
                 if (line.length() >= 4 && line.length() <= 6) {
                     mEasyWords.add(line);
@@ -280,10 +340,16 @@ public class HangmanFragment extends Fragment {
         }
     }
 
+    /**
+     * Updates the number of guesses to the layout
+     */
     public void updateGuesses() {
         mGuessesText.setText(Integer.toString(mGuesses));
     }
 
+    /**
+     * sets the display word initially to all pus signs
+     */
     public void setWord() {
         mDisplayWord = "";
         for (int i = 0; i < mWord.length(); i++) {
@@ -292,6 +358,9 @@ public class HangmanFragment extends Fragment {
         mWordTextView.setText(mDisplayWord);
     }
 
+    /**
+     * piscks a word for the user to guess from the array lists of words based on the difficulty
+     */
     public void pickWord() {
         Random rand = new Random();
         int num;
@@ -312,12 +381,18 @@ public class HangmanFragment extends Fragment {
         setWord();
     }
 
+    /**
+     * updates the layout and decides whether the user won or lost on the move
+     * @param letter the letter pressed
+     */
     public void letterPressed(char letter) {
+        // checks if the letter is in the word
         checkLetterInWord(letter);
 
+        // checks if the user won
         boolean didWin = checkWin();
 
-
+        // displays the winning layout
         if (didWin) {
             mWins = mWins + 1;
             mWinLossDisplay.setText("You Won!!");
@@ -325,6 +400,7 @@ public class HangmanFragment extends Fragment {
             mGameLayout.setVisibility(View.INVISIBLE);
         }
 
+        // displays the losing layout
         if (mGuesses <= 0) {
             mLosses = mLosses + 1;
             mWinLossDisplay.setText("You Lost!!");
@@ -333,11 +409,17 @@ public class HangmanFragment extends Fragment {
             mLostWordDisplay.setText("The word was: " + mWord);
         }
 
+        // updates the layout
         updateUI();
     }
 
+    /**
+     * Checks if the letter is in the word
+     * @param letter
+     */
     public void checkLetterInWord(char letter) {
         boolean foundLetter = false;
+        // iterates through the word to find the letter
         for (int i = 0; i < mWord.length(); i++) {
             if (mWord.charAt(i) == letter) {
                 StringBuilder newDisplay = new StringBuilder(mDisplayWord);
@@ -347,11 +429,16 @@ public class HangmanFragment extends Fragment {
             }
         }
 
+        // if the letter is not in the word decrement the guesses
         if(!foundLetter) {
             mGuesses = mGuesses - 1;
         }
     }
 
+    /**
+     * Checks if the display word is equivelent to the word. If they are the same the user has won
+     * @return if the user won
+     */
     public boolean checkWin() {
         if (mDisplayWord.equalsIgnoreCase(mWord)) {
             return true;
@@ -359,14 +446,21 @@ public class HangmanFragment extends Fragment {
         return false;
     }
 
+    /**
+     * updates the layout with the current number of wins and losses, guesses, and display word
+     */
     public void updateUI() {
         mScoreText.setText("Wins: " + mWins + "   Losses: " +mLosses);
         mGuessesText.setText(Integer.toString(mGuesses));
         mWordTextView.setText(mDisplayWord);
     }
 
+    /**
+     * resets the game based on the opponent asks for necessary inputs
+     */
     public void resetGame() {
         mGuesses = 7;
+        //prompts user for word
         if (mIsHuman) {
             promptHuman();
         }
@@ -374,17 +468,30 @@ public class HangmanFragment extends Fragment {
             pickWord();
             mGameLayout.setVisibility(View.VISIBLE);
         }
+
+        // sets all letter buttons visible
         for (int i = 0; i < mLetterButtons.length; i++) {
             mLetterButtons[i].setVisibility(View.VISIBLE);
         }
+        // sets all buttons to not clicked
         Arrays.fill(mLetterClicked, false);
+        // updates teh layout
         updateUI();
     }
 
+    /**
+     * returns teh number of wins the welcome fragment
+     * @param result input intent
+     * @return the number of wins
+     */
     public static int returnWins(Intent result) {
         return  result.getIntExtra(ARGUMENT_WINS, 0);
     }
-
+    /**
+     * returns the number of losses the welcome fragment
+     * @param result input intent
+     * @return the number of losses
+     */
     public static int returnLosses(Intent result) {
         return  result.getIntExtra(ARGUMENT_LOSSES, 0);
     }
