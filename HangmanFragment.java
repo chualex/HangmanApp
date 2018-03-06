@@ -193,10 +193,7 @@ public class HangmanFragment extends Fragment {
         mWinLossDisplay = (TextView) view.findViewById(R.id.win_loss_title);
 
 
-        //Initializes game based on computer or human player
-        if (savedInstanceState == null) {
-            Initialize();
-        }
+
 
         // set up quit button
         // sends the user back to the Welcome Fragment
@@ -212,6 +209,12 @@ public class HangmanFragment extends Fragment {
         //set up lost word display
         // displays the word when the user has lost
         mLostWordDisplay = (TextView) view.findViewById(R.id.display_word);
+
+
+        //Initializes game based on computer or human player
+        if (savedInstanceState == null) {
+            Initialize();
+        }
 
         // updates the layout
         updateUI();
@@ -279,6 +282,8 @@ public class HangmanFragment extends Fragment {
             mHumanPromptLayout.setVisibility(View.INVISIBLE);
             pickWord();
         }
+
+        mLostWordDisplay.setText(" ");
     }
 
     /**
@@ -475,6 +480,9 @@ public class HangmanFragment extends Fragment {
         }
         // sets all buttons to not clicked
         Arrays.fill(mLetterClicked, false);
+
+        mLostWordDisplay.setText("");
+
         // updates teh layout
         updateUI();
     }
